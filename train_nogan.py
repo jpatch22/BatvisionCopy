@@ -33,7 +33,7 @@ ap.add_argument("-o","--objective",type=str,required=True,
     help="Training objective - grayscale | depth")
 ap.add_argument("-tf", "--trainingFile", type=str, required=True,
                 help="Training file path")
-ap.add_argument("-vf", "valueFile", type=str, required=True,
+ap.add_argument("-vf", "--valueFile", type=str, required=True,
                 help="Value File path")
 
 args = vars(ap.parse_args())

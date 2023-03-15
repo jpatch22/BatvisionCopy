@@ -13,7 +13,7 @@ class raw_to_depth(Dataset):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
-            
+
         """
         self.df = pd.read_csv(csv_file, sep="\t")
         self.output = (output,output)
@@ -25,7 +25,10 @@ class raw_to_depth(Dataset):
     def __getitem__(self, idx):
 
         start_id = random.randint(0,970)
-        left_raw_path = self.df["raw_l"].loc[idx]
+        print(self.df)
+        print("The columns are:", self.df.columns)
+        print("Accessing the value gives", self.df["left audio time"])
+        left_raw_path = self.df["left audio time"].loc[idx]
         left_raw = np.load(left_raw_path)[start_id:start_id+3200]
         left_raw = np.expand_dims(np.expand_dims(left_raw,axis=0),axis=0)
 
@@ -43,7 +46,7 @@ class raw_to_depth(Dataset):
         depth_meas[depth_meas > 12e3] = 12e3
         depth_meas = depth_meas/12e3
         depth = np.expand_dims(depth_meas,axis=0)
-                
+
         return torch.from_numpy(left_raw).float(),torch.from_numpy(right_raw).float(), torch.from_numpy(depth).float()
 
 class raw_spec_to_depth(Dataset):
@@ -53,7 +56,7 @@ class raw_spec_to_depth(Dataset):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
-            
+
         """
         self.df = pd.read_csv(csv_file, sep="\t")
         self.output = (output,output)
@@ -80,8 +83,8 @@ class raw_spec_to_depth(Dataset):
         left_spec = Image.open(left_spec_path).crop((54, 35, 388, 251))
         left_spec = left_spec.convert('RGB')#.resize((256,256), Image.ANTIALIAS)
         left_spec = (np.array(left_spec)*1/255).transpose((2,0,1))
-        
-        
+
+
         right_spec_path = self.df["spec_r"].loc[idx]
         right_spec = Image.open(right_spec_path).crop((54, 35, 388, 251))
         right_spec = right_spec.convert('RGB')#.resize((256,256), Image.ANTIALIAS)
@@ -94,7 +97,7 @@ class raw_spec_to_depth(Dataset):
         depth_meas[depth_meas > 12e3] = 12e3
         depth_meas = depth_meas/12e3
         depth = np.expand_dims(depth_meas,axis=0)
-                
+
         return torch.from_numpy(left_spec).float(),torch.from_numpy(right_spec).float(),torch.from_numpy(left_raw).float(),torch.from_numpy(right_raw).float(), torch.from_numpy(depth).float()
 
 
@@ -105,7 +108,7 @@ class raw_to_image(Dataset):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
-            
+
         """
         self.df = pd.read_csv(csv_file, sep="\t")
         self.output = (output,output)
@@ -130,7 +133,7 @@ class raw_to_image(Dataset):
         image = Image.open(image_path).resize(self.output, Image.ANTIALIAS)
         image = image.convert('L')
         image = np.expand_dims((np.array(image)*1/255),axis=-1).transpose((2,0,1))
-        
+
         return torch.from_numpy(left_raw).float(),torch.from_numpy(right_raw).float(), torch.from_numpy(image).float()
 
 class spec_to_depth(Dataset):
@@ -140,7 +143,7 @@ class spec_to_depth(Dataset):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
-            
+
         """
         self.df = pd.read_csv(csv_file, sep="\t")
         self.output = (output,output)
@@ -153,8 +156,8 @@ class spec_to_depth(Dataset):
         left_spec = Image.open(left_spec_path).crop((54, 35, 388, 251))
         left_spec = left_spec.convert('RGB')#.resize((256,256), Image.ANTIALIAS)
         left_spec = (np.array(left_spec)*1/255).transpose((2,0,1))
-        
-        
+
+
         right_spec_path = self.df["spec_r"].loc[idx]
         right_spec = Image.open(right_spec_path).crop((54, 35, 388, 251))
         right_spec = right_spec.convert('RGB')#.resize((256,256), Image.ANTIALIAS)
@@ -178,7 +181,7 @@ class spec_to_image(Dataset):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
-            
+
         """
         self.df = pd.read_csv(csv_file, sep="\t")
         self.output = (output,output)
@@ -192,8 +195,8 @@ class spec_to_image(Dataset):
         left_spec = Image.open(left_spec_path).crop((54, 35, 388, 251))
         left_spec = left_spec.convert('RGB')#.resize((256,256), Image.ANTIALIAS)
         left_spec = (np.array(left_spec)*1/255).transpose((2,0,1))
-        
-        
+
+
         right_spec_path = self.df["spec_r"].loc[idx]
         right_spec = Image.open(right_spec_path).crop((54, 35, 388, 251))
         right_spec = right_spec.convert('RGB')#.resize((256,256), Image.ANTIALIAS)
