@@ -31,6 +31,10 @@ ap.add_argument("-r","--resolution",type=int,required=True,
     help="output resolution - 32 | 64 | 128")
 ap.add_argument("-o","--objective",type=str,required=True,
     help="Training objective - grayscale | depth")
+ap.add_argument("-tf", "--trainingFile", type=str, required=True,
+                help="Training file path")
+ap.add_argument("-vf", "valueFile", type=str, required=True,
+                help="Value File path")
 
 args = vars(ap.parse_args())
 
@@ -38,8 +42,8 @@ spt.setproctitle(args["version"])
 
 torch.backends.cudnn.benchmark = True
 
-CSV_TRAIN = "../data/2019.08.14/specCW_raw_long_image_meas_train2.csv"
-CSV_VAL = "../data/2019.08.14/specCW_raw_long_image_meas_val2.csv"
+CSV_TRAIN = args["trainingFile"]#"../data/2019.08.14/specCW_raw_long_image_meas_train2.csv"
+CSV_VAL = args["valueFile"]#"../data/2019.08.14/specCW_raw_long_image_meas_val2.csv"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_GPU = torch.cuda.device_count()
