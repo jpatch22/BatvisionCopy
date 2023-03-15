@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 
+print("RUNNING CUSTOM FILE")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-e", "--epochs", type=int, required=True,
@@ -70,7 +71,7 @@ elif args["audioencoder"] == "spectrogram":
         dataset_train = spec_to_depth(csv_file=CSV_TRAIN,output=output_res)
         dataset_val = spec_to_depth(csv_file=CSV_VAL,output=output_res)
     else:
-        raise Exception("Objective: use grayscale or depth")  
+        raise Exception("Objective: use grayscale or depth")
 
     model = SpectrogramNet(generator=args["generator"],output=output_res)
 
@@ -107,7 +108,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 if args["checkpoint"] is None:
     checkpoint_epoch=0
-       
+
 else:
     checkpoint = torch.load("../checkpoints/checkpoint_"+args["version"]+"_"+str(args["checkpoint"])+".pth")
     model.load_state_dict(checkpoint["state_dict"])
@@ -134,20 +135,20 @@ for epoch in range(checkpoint_epoch,epochs):
 
     avg_acc = 0
     avg_val_acc = 0
-    
+
     # ------ TRAINING ---------
-    
+
     model.train()  # train mode
-    
+
 
     for i,(x1_batch, x2_batch, y_batch) in enumerate(train_loader):
-        
+
         x1_batch = x1_batch.to(device)
         x2_batch = x2_batch.to(device)
 
-        
-        y_batch = y_batch.to(device)    
-           
+
+        y_batch = y_batch.to(device)
+
         # set parameter gradients to zero
         optimizer.zero_grad()
 
@@ -163,38 +164,38 @@ for epoch in range(checkpoint_epoch,epochs):
         acc = ((1-torch.abs(y_pred-y_batch))*100)
         acc = acc[y_batch!=0].mean()
 
-        
-        # calculate metrics 
+
+        # calculate metrics
         avg_loss += loss / len(train_loader)
         avg_acc += acc / len(train_loader)
-        
+
         print('[{}/{}] - loss: {:.4f} - acc: {:.3f}'.format(i,len(train_loader)-1,loss,acc), end="\r",flush=True)
 
         for param_group in optimizer.param_groups:
             writer.add_scalar('Learning_rate', param_group['lr'], train_iter)
         train_iter +=1
         break
-       
+
     print('[{}/{}] - loss: {:.4f} - acc: {:.3f}'.format(i,len(train_loader)-1,avg_loss, avg_acc))
-    
+
     writer.add_scalar('Train/Loss', avg_loss, epoch)
     writer.add_scalar('Train/Accuracy', avg_acc, epoch)
-    
-    
-    
+
+
+
     # ------- VALIDATION ------------
-    
+
     model.eval()  # val mode
 
     with torch.no_grad():
-    
+
         for x1_val, x2_val, y_val in val_loader:
-            
+
             x1_val = x1_val.to(device)
             x2_val = x2_val.to(device)
 
-            y_val = y_val.to(device)        
-            
+            y_val = y_val.to(device)
+
             y_pred_val = model(x1_val,x2_val)
 
             loss_val = criterion(y_pred_val,y_val)
@@ -202,11 +203,11 @@ for epoch in range(checkpoint_epoch,epochs):
 
             acc_val = ((1-torch.abs(y_pred_val-y_val))*100)
             acc_val = acc_val[y_val!=0].mean()
-            
+
             avg_val_loss += loss_val / len(val_loader)
             avg_val_acc += acc_val / len(val_loader)
             break
-        
+
     print(' - val loss: {:.4f} - acc: {:.3f}'.format(avg_val_loss,avg_val_acc))
 
     epoch_time = time.time()-t0
@@ -216,27 +217,27 @@ for epoch in range(checkpoint_epoch,epochs):
     writer.add_scalar('Val/Loss', avg_val_loss, epoch)
     writer.add_scalar('Val/Accuracy', avg_val_acc, epoch)
     writer.add_scalar('Epoch_time',epoch_time,epoch)
-    
-    
-    
-    
+
+
+
+
     # ------- IMAGES TO TENSORBOARD ------------
-        
-    
+
+
     if epoch % 1 == 0:
 
         images = vutils.make_grid(y_pred[:,-1,:,:].unsqueeze(1), normalize=True, scale_each=True)
         writer.add_image('Train/Pred', images, epoch)
-        
+
         images = vutils.make_grid(y_batch[:,-1,:,:].unsqueeze(1), normalize=True, scale_each=True)
         writer.add_image('Train/True', images, epoch)
-        
+
         images = vutils.make_grid(y_pred_val[:,-1,:,:].unsqueeze(1), normalize=True, scale_each=True)
         writer.add_image('Val/Pred', images, epoch)
-        
+
         images = vutils.make_grid(y_val[:,-1,:,:].unsqueeze(1), normalize=True, scale_each=True)
         writer.add_image('Val/True', images, epoch)
-        
+
         state = {
             'epoch': epoch,
             'state_dict': model.state_dict(),
@@ -244,7 +245,7 @@ for epoch in range(checkpoint_epoch,epochs):
         }
         torch.save(state, "../checkpoints/checkpoint_"+args["version"]+"_"+str(epoch)+".pth")
 
-        
+
 
         #for name, param in model.named_parameters():
         #    if 'bn' not in name:
@@ -253,4 +254,4 @@ for epoch in range(checkpoint_epoch,epochs):
         #        writer.add_scalar('Params_L2norm/'+name,(param**2).mean().sqrt(),epoch)
         #        writer.add_scalar('Gradients_L2norm/'+name,(param.grad**2).mean().sqrt(),epoch)
 
-   
+
